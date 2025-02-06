@@ -40,7 +40,9 @@ jobs:
 
       - name: Terrform init
         id: init
-        run: terraform init -backend-config="BUCKET_TF_STATE"
+        run: terraform init \
+          -backend-config="bucket=${{ env.BUCKET_TF_STATE }}" \
+          -backend-config="region=${{ env.AWS_REGION }}"
 
       - name: Terrform format
         id: fmt
