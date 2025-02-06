@@ -1,5 +1,4 @@
 name: "Vprofile IAC"
-
 on:
   push:
     branches:
@@ -8,58 +7,52 @@ on:
     paths:
       - terraform/**
   pull_request:
-    # If you want to run the workflow on pull requests *into* main
-    branches:
-      - main
+    branches: -main
     paths:
       - terraform/**
 
 env:
-  # Credentials for deployment to AWS
-  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-  # S3 bucket for the Terraform state
-  BUCKET_TF_STATE: ${{ secrets.BUCKET_TF_STATE }}
+  #Credentails for deployemnt to AWS
+  AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}}
+  AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
+  # S3 bucket for the Terrform state
+  BUCKET_TF_STATE: ${{secrets.BUCKET_TF_STATE}}
   AWS_REGION: us-east-1
   EKS_CLUSTER: vprofile-eks
 
 jobs:
   terraform:
     name: "Apply terraform code changes"
-    runs-on: ubuntu-latest # <- corrected to ubuntu-latest
+    runs-on: ubuntu-latest
     defaults:
       run:
         shell: bash
-        working-directory: ./terraform # <- corrected path to match "terraform" folder
+        working-directory: ./terraform
 
     steps:
-      - name: Check out source code
+      - name: checkout source code
         uses: actions/checkout@v4
 
-      - name: Set up Terraform
+      - name: Setup Terrform with specified version on the runner
         uses: hashicorp/setup-terraform@v2
-        # with:
-        #   terraform_version: 1.6.3
-        # (Uncomment above if you want a specific version instead of the latest.)
+        #with:
+        #terraform_version: 1.6.3  automatically will take lastest
 
-      - name: Terraform init
+      - name: Terrform init
         id: init
-        # Include backend configuration properly. Example uses environment variables:
-        run: terraform init \
-          -backend-config="bucket=${{ env.BUCKET_TF_STATE }}" \
-          -backend-config="region=${{ env.AWS_REGION }}"
+        run: terraform init -backend-config="BUCKET_TF_STATE"
 
-      - name: Terraform format check
+      - name: Terrform format
         id: fmt
-        run: terraform fmt -check
+        run: terrform fmt -check
 
-      - name: Terraform validate
+      - name: Terrform validate
         id: validate
         run: terraform validate
 
       - name: Terraform plan
         id: plan
-        run: terraform plan -no-color -input=false -out=planfile
+        run: terraform plan -no-color -input=false -out planfile
         continue-on-error: true
 
       - name: Terraform plan status
